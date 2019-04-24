@@ -1,4 +1,4 @@
-# max
+# Senthu
 
 ## Project setup
 ```
@@ -27,9 +27,6 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
-
-
-
 
     apiKey: "AIzaSyBrl2GbcXKqvlatKL_iwzoOxXzz34xhGos",
     authDomain: "devmeetup-7c887.firebaseapp.com",
