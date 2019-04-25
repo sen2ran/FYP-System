@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-console */
 import Vue from 'vue'
 import Vuex from 'vuex'
 import * as firebase from 'firebase'
-import { stat } from 'fs';
-import { duration } from 'moment';
-import { async } from 'q';
+import router from './router'
+
 
 Vue.use(Vuex)
 
@@ -34,7 +35,9 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    loadDataForToday({ commit }, payload) {
+    loadDataForToday({
+      commit
+    }, payload) {
       console.log(payload);
       var database = firebase.database();
       var loadDataForToday = firebase.database().ref('users/' + payload.userId + '/Scheduler/' + payload.ScheduleId);
@@ -50,7 +53,9 @@ export default new Vuex.Store({
         }
       });
     },
-    makeProject({ commit }, payload) {
+    makeProject({
+      commit
+    }, payload) {
       var database = firebase.database();
       firebase.database().ref('users/123').set({
         Name: payload.Name,
@@ -79,78 +84,88 @@ export default new Vuex.Store({
         }
       });
     },
-    async setEndTime ({
+    setEndTime({
       commit
     }, payload) {
       let SumObj
       let listObj
       let totalCompletedTime
       let SummeryObjIndex
+      let duration
+      let endTime
       let startTime
 
+      endTime = Number(new Date());
 
-      var loadDataForToday = await firebase.database().ref('users/' + payload.userId + "/Scheduler/" + payload.ScheduleId + "/list/" + payload.listIndex);
+      var loadDataForToday = firebase.database().ref('users/' + payload.userId + "/Scheduler/" + payload.ScheduleId + "/list/" + payload.listIndex);
       loadDataForToday.once('value', function (snapshot) {
         listObj = snapshot.val()
         startTime = listObj.startTime;
-      });
+        duration = Math.round((endTime - startTime) / 60000)
 
-      var SummeryObj = firebase.database().ref('users/' + payload.userId + "/SummeryObj/");
-      SummeryObj.once('value', function (snapshot) {
-        SumObj = snapshot.val()
-        // console.log(SumObj);
-        for (let w = 0; w < SumObj.length; w++) {
-          if (SumObj[w].id == payload.ScheduleId) {
-            SummeryObjIndex = w
-            totalCompletedTime = SumObj[w].id
-            console.log(totalCompletedTime);
+        var SummeryObj = firebase.database().ref('users/' + payload.userId + "/SummeryObj/");
+        SummeryObj.once('value', function (snapshot) {
+          SumObj = snapshot.val()
+          for (let w = 0; w < SumObj.length; w++) {
+            if (SumObj[w].id == payload.ScheduleId) {
+              SummeryObjIndex = w
+              totalCompletedTime = Number(SumObj[w].totalCompletedTime)
+              console.log(SummeryObjIndex);
+            }
           }
+          //Get Duration
+          firebase.database().ref('users/' + payload.userId + "/SummeryObj/" + SummeryObjIndex).update({
+            totalCompletedTime: totalCompletedTime + duration
+          }, function (error) {
+            if (error) {
+              console.log("Error !!");
+            } else {
+              console.log("Successfully !!!");
+
+              firebase.database().ref('users/' + payload.userId + "/Scheduler/" + payload.ScheduleId).update({
+                totalCompletedTime: totalCompletedTime + duration
+              }, function (error) {
+                if (error) {
+                  console.log("Error !!");
+                } else {
+                  console.log("Successfully !!!");
+
+                  // // List
+                  firebase.database().ref('users/' + payload.userId + "/Scheduler/" + payload.ScheduleId + "/list/" + payload.listIndex).update({
+                    totalCompletedTime: duration,
+                    endTime: Number(new Date()),
+                    isDone: true
+                  }, function (error) {
+                    if (error) {
+                      console.log("Error !!");
+                    } else {
+                      console.log("Successfully !!!");
+                      commit('SET_IS_SINGLE_COMPLETED', false)
+                    }
+                  });
+                }
+              });
+            }
+          });
+        });
+      });
+    },
+    setPendingShoots({
+      commit
+    }, payload) {
+      console.log(payload);
+      var database = firebase.database();
+      firebase.database().ref('users/' + payload.userId + '/pending').set({
+        [payload.ScheduleId]: payload.list
+      }, function (error) {
+        if (error) {
+          console.log("Error !!");
+        } else {
+          console.log("Successfully !!!");
+          router.push('/pending')
+          commit('SET_ISADDED', true)
         }
       });
-
-      //Get Duration
-
-      let endTime = Number(new Date());
-      let duration = Math.round((endTime - startTime) / 60000)
-
-      console.log(duration);
-      console.log(totalCompletedTime);
-
-
-      //update Mulity Time
-      //total time
-      // firebase.database().ref('users/' + payload.userId + "/SummeryObj/" + SummeryObjIndex).update({
-      //   totalCompletedTime: totalCompletedTime + duration
-      // }, function (error) {
-      //   if (error) {
-      //     console.log("Error !!");
-      //   } else {
-      //     console.log("Successfully !!!");
-      //   }
-      // });
-
-      // firebase.database().ref('users/' + payload.userId + "/Scheduler/" + payload.ScheduleId).update({
-      //   totalCompletedTime: totalCompletedTime + duration
-      // }, function (error) {
-      //   if (error) {
-      //     console.log("Error !!");
-      //   } else {
-      //     console.log("Successfully !!!");
-      //   }
-      // });
-      // // List
-      // firebase.database().ref('users/' + payload.userId + "/Scheduler/" + payload.ScheduleId + "/list/" + payload.listIndex).update({
-      //   totalCompletedTime: duration,
-      //   endTime: Number(new Date()),
-      //   isDone: true
-      // }, function (error) {
-      //   if (error) {
-      //     console.log("Error !!");
-      //   } else {
-      //     console.log("Successfully !!!");
-      //   }
-      // });
-      // commit('SET_IS_SINGLE_COMPLETED', false)
     },
     signUserup({
       commit

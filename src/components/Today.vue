@@ -5,11 +5,16 @@
         <h1>{{ScheduleId}}</h1>
         <v-card-title>
           <template v-if="Lists">
-            Callsheet Time :{{ Number(Lists.callsheet)* 60*7}} Min</template>
-          <br>
-          <template v-if="Lists">Total Time : {{Lists.totalTime}} Min</template>
-          <br>
-          <template v-if="Lists">Completed Time : {{Lists.totalCompletedTime}} Min</template>
+            Callsheet Time :{{ Number(Lists.callsheet)* 60*7}} Min
+            <br>
+            Total Time : {{Lists.totalTime}} Min
+            <br>
+            Completed Time : {{Lists.totalCompletedTime}} Min
+            <br>
+            <template v-if="Lists.totalCompletedTime  >   (Number(Lists.callsheet)* 60*7) ">
+              <v-btn color="danger" @click="AnalysisFn()">Analysis</v-btn>
+            </template>
+          </template>
           <v-spacer></v-spacer>
           <v-text-field
             v-model="search"
@@ -23,7 +28,8 @@
         <template v-if="Lists">
           <v-data-table :headers="headers" :items="Lists.list" :search="search">
             <template v-slot:items="props">
-              <td>{{ moment(props.item.Day).format("MMM Do YY")}}</td>
+              <td>{{ props.item.Id }}</td>
+              <!-- <td>{{ moment(props.item.TimeStamp).format("MMM Do YY")}}</td> -->
               <td>{{ props.item.Shot }}</td>
               <td>{{ props.item.Subject }}</td>
               <td>{{ props.item.Camera }}</td>
@@ -31,15 +37,15 @@
               <td>{{ props.item.Equipment }}</td>
               <td>{{ props.item.Lense }}</td>
               <td>{{ props.item.Location }}</td>
-              <td>{{ props.item.ShootTime }}</td>
-              <td>{{ props.item.SetupTime }}</td>
+              <td>{{ props.item.ShootTime }} || {{ props.item.SetupTime }}</td>
+              <!-- <td>{{ props.item.SetupTime }}</td> -->
               <template v-if="props.item.startTime  ==  0 && props.item.endTime  ==  0 ">
                 <td>
                   <v-btn
                     color="success"
-                    :disabled="isSingleCompleted"
+                    :disabled="isSingleCompleted || Lists.totalCompletedTime  >   (Number(Lists.callsheet)* 60*7) "
                     @click="startTimeFn(props)"
-                  >Start Time</v-btn>
+                  >Start Time {{(Number(Lists.callsheet)* 60*7) }} || {{Lists.totalCompletedTime}}</v-btn>
                 </td>
               </template>
               <template v-else-if="props.item.startTime  >  0 && props.item.endTime  ==  0 ">
@@ -72,7 +78,8 @@ export default {
     return {
       search: "",
       headers: [
-        { text: "Day", value: "Day" },
+        { text: "Id", value: "id" },
+        // { text: "Day", value: "Day" },
         { text: "Shot", value: "Shot" },
         { text: "Subject", value: "Subject" },
         { text: "Camera", value: "Camera" },
@@ -80,8 +87,8 @@ export default {
         { text: "Equipment", value: "Equipment" },
         { text: "Lense", value: "Lense" },
         { text: "Location", value: "Location" },
-        { text: "ShootTime", value: "ShootTime" },
-        { text: "SetupTime", value: "SetupTime" },
+        { text: "ShootTime + SetupTime", value: "ShootTime" },
+        // { text: "SetupTime", value: "SetupTime" },
         { text: "Time", value: "time" }
       ],
       userId: "123",
@@ -107,7 +114,7 @@ export default {
       var today = new Date();
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
-      var ScheduleId = dd + "M" + mm;
+      this.ScheduleId = dd + "M" + mm;
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
@@ -125,6 +132,20 @@ export default {
         userId: this.userId,
         ScheduleId: this.ScheduleId,
         listIndex: obj.index
+      });
+    },
+    AnalysisFn() {
+      let notShooted = [];
+      let list = this.Lists.list;
+      for (let q = 0; q < list.length; q++) {
+        if (list[q].startTime == 0) {
+          notShooted.push(list[q]);
+        }
+      }
+      this.$store.dispatch("setPendingShoots", {
+        userId: this.userId,
+        ScheduleId: this.ScheduleId,
+        list: notShooted
       });
     }
   }

@@ -183,17 +183,17 @@ export default {
       let arrays = arr;
       // scheduler.dates = dateObj;
       for (let v = 0; v < dateObj.length; v++) {
-        scheduler[dateObj[v].id] = this.dateFn(dates[v], arrays);
+        scheduler[dateObj[v].id] = this.dateFn(dates[v], arrays, dateObj[v].id);
         dateObj[v].totalTime = scheduler[dateObj[v].id].totalTime;
         dateObj[v].totalCompletedTime = 0;
-        dateObj[v].callsheet =scheduler[dateObj[v].id].callsheet;
+        dateObj[v].callsheet = scheduler[dateObj[v].id].callsheet;
       }
       console.log(scheduler);
       this.scheduler = scheduler;
       this.dateObj = dateObj;
       return arr;
     },
-    dateFn(date, arrays) {
+    dateFn(date, arrays, id) {
       let finalObj = {};
       let arr = [];
       let characters = [];
@@ -201,12 +201,15 @@ export default {
       let location = [];
       let equipment = [];
       let callsheet = 0;
-
       let totalTime = 0;
+
+      let listIndex = 0;
       for (let a = 0; a < arrays.length; a++) {
         let data = arrays[a];
         if (date == arrays[a].date) {
+          arrays[a].Id = id + "S" + (listIndex + 1);
           arr.push(arrays[a]);
+          listIndex++;
           for (let w = 0; w < arrays[a].Subject.length; w++) {
             let char = arrays[a].Subject[w];
             if (!characters.includes(char)) {
