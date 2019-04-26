@@ -94,9 +94,7 @@ export default new Vuex.Store({
       let duration
       let endTime
       let startTime
-
       endTime = Number(new Date());
-
       var loadDataForToday = firebase.database().ref('users/' + payload.userId + "/Scheduler/" + payload.ScheduleId + "/list/" + payload.listIndex);
       loadDataForToday.once('value', function (snapshot) {
         listObj = snapshot.val()
@@ -165,6 +163,22 @@ export default new Vuex.Store({
           router.push('/pending')
           commit('SET_ISADDED', true)
         }
+      });
+    },
+    loadDataForPending({
+      commit
+    }, payload) {
+      let listObj
+      let dateObj = []
+      var loadDataForSummeryObj = firebase.database().ref('users/' + payload.userId + "/SummeryObj");
+      loadDataForSummeryObj.once('value', function (snapshot) {
+        listObj = snapshot.val()
+        for (let i = 0; i < listObj.length; i++) {
+          if (parseFloat(listObj[i].date) >= payload.date) {
+            dateObj.push(listObj[i])
+          }
+        }
+        console.log(dateObj);
       });
     },
     signUserup({

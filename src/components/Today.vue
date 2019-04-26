@@ -39,13 +39,23 @@
               <td>{{ props.item.Location }}</td>
               <td>{{ props.item.ShootTime }} || {{ props.item.SetupTime }}</td>
               <!-- <td>{{ props.item.SetupTime }}</td> -->
+              <!-- <template v-if="Lists.totalCompletedTime   >  (Number(Lists.callsheet)* 60*7) ">
+                <td>Pending</td>
+              </template>-->
               <template v-if="props.item.startTime  ==  0 && props.item.endTime  ==  0 ">
                 <td>
                   <v-btn
                     color="success"
-                    :disabled="isSingleCompleted || Lists.totalCompletedTime  >   (Number(Lists.callsheet)* 60*7) "
+                    :disabled="isSingleCompleted || Lists.totalCompletedTime   >  (Number(Lists.callsheet)* 60*7)"
                     @click="startTimeFn(props)"
-                  >Start Time {{(Number(Lists.callsheet)* 60*7) }} || {{Lists.totalCompletedTime}}</v-btn>
+                  >
+                    <template
+                      v-if=" Lists.totalCompletedTime   >  (Number(Lists.callsheet)* 60*7)"
+                    >Pending</template>
+                    <template
+                      v-else
+                    >Start Time {{(Number(Lists.callsheet)* 60*7) }} || {{Lists.totalCompletedTime}}</template>
+                  </v-btn>
                 </td>
               </template>
               <template v-else-if="props.item.startTime  >  0 && props.item.endTime  ==  0 ">
@@ -114,7 +124,9 @@ export default {
       var today = new Date();
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
-      this.ScheduleId = dd + "M" + mm;
+      // this.ScheduleId = dd + "M" + mm;
+      this.ScheduleId = "23M4";
+
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
@@ -137,6 +149,7 @@ export default {
     AnalysisFn() {
       let notShooted = [];
       let list = this.Lists.list;
+      // let deletedList =
       for (let q = 0; q < list.length; q++) {
         if (list[q].startTime == 0) {
           notShooted.push(list[q]);

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/components/Home'
 import Today from '@/components/Today'
+import Pending from '@/components/Pending'
 import Signin from '@/components/User/Signin'
 import Signup from '@/components/User/Signup'
 import Add from '@/components/Add'
@@ -24,6 +25,11 @@ export default new Router({
       path: '/today',
       name: 'today',
       component: Today
+    },
+    {
+      path: '/pending',
+      name: 'pending',
+      component: Pending
     },
     {
       path: '/signup',
