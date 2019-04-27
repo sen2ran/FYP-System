@@ -41,18 +41,19 @@ export default {
   computed: {
     menuItems() {
       let menuItems;
-      if (this.userIsAuthenticated) {
+      // if (this.userIsAuthenticated) {
         menuItems = [
-          // { icon: "room", title: "Organize Meetup", link: "/meetup/new" },
           { icon: "person", title: "ADD", link: "/add" },
-          { icon: "person", title: "Today", link: "/today" }
+          { icon: "person", title: "Today", link: "/today" },
+          { icon: "person", title: "Pending", link: "/pending"}
+          
         ];
-      } else {
-        menuItems = [
-          { icon: "face", title: "Sign up", link: "/signup" },
-          { icon: "lock_open", title: "Sign in", link: "/signin" }
-        ];
-      }
+      // } else {
+      //   menuItems = [
+      //     { icon: "face", title: "Sign up", link: "/signup" },
+      //     { icon: "lock_open", title: "Sign in", link: "/signin" }
+      //   ];
+      // }
       return menuItems;
     },
     userIsAuthenticated() {
@@ -67,9 +68,6 @@ export default {
     }
   },
   methods: {
-    nanfn() {
-      // console.log("Seb2");
-    }
   }
 };
 </script>

@@ -152,17 +152,39 @@ export default new Vuex.Store({
       commit
     }, payload) {
       console.log(payload);
+      let listObj;
+      let PendingSummeryObj;
+      let payloadPendingSummeryObj = payload.PendingSummeryObj
       var database = firebase.database();
-      firebase.database().ref('users/' + payload.userId + '/pending').set({
-        [payload.ScheduleId]: payload.list
-      }, function (error) {
-        if (error) {
-          console.log("Error !!");
+      var loadDataForPendingSummeryObj = firebase.database().ref('users/' + payload.userId + "/PendingSummeryObj");
+      loadDataForPendingSummeryObj.once('value', function (snapshot) {
+        listObj = snapshot.val()
+        if (listObj == null) {
+          PendingSummeryObj = payloadPendingSummeryObj
         } else {
-          console.log("Successfully !!!");
-          router.push('/pending')
-          commit('SET_ISADDED', true)
+          PendingSummeryObj = listObj.concat(payloadPendingSummeryObj)
         }
+        // console.log(PendingSummeryObj);
+        firebase.database().ref('users/' + payload.userId + '/Pending').update({
+          [payload.ScheduleId]: payload.list
+        }, function (error) {
+          if (error) {
+            console.log("Error !!");
+          } else {
+            console.log("Successfully !!!");
+            firebase.database().ref('users/' + payload.userId).update({
+              PendingSummeryObj: PendingSummeryObj
+            }, function (error) {
+              if (error) {
+                console.log("Error !!");
+              } else {
+                console.log("Successfully !!!");
+                router.push('/pending')
+                commit('SET_ISADDED', true)
+              }
+            });
+          }
+        });
       });
     },
     loadDataForPending({
@@ -178,7 +200,7 @@ export default new Vuex.Store({
             dateObj.push(listObj[i])
           }
         }
-        console.log(dateObj);
+        console.log(dateObj); //getting Future 
       });
     },
     signUserup({

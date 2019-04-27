@@ -11,7 +11,7 @@
             <br>
             Completed Time : {{Lists.totalCompletedTime}} Min
             <br>
-            <template v-if="Lists.totalCompletedTime  >   (Number(Lists.callsheet)* 60*7) ">
+            <template v-if="Lists.totalCompletedTime  >=   (Number(Lists.callsheet)* 60*7) ">
               <v-btn color="danger" @click="AnalysisFn()">Analysis</v-btn>
             </template>
           </template>
@@ -37,7 +37,7 @@
               <td>{{ props.item.Equipment }}</td>
               <td>{{ props.item.Lense }}</td>
               <td>{{ props.item.Location }}</td>
-              <td>{{ props.item.ShootTime }} || {{ props.item.SetupTime }}</td>
+              <td>{{ props.item.ShootTime }} Min + {{ props.item.SetupTime }} Min = {{ Number(props.item.ShootTime) + Number(props.item.SetupTime)}} Min</td>
               <!-- <td>{{ props.item.SetupTime }}</td> -->
               <!-- <template v-if="Lists.totalCompletedTime   >  (Number(Lists.callsheet)* 60*7) ">
                 <td>Pending</td>
@@ -46,11 +46,11 @@
                 <td>
                   <v-btn
                     color="success"
-                    :disabled="isSingleCompleted || Lists.totalCompletedTime   >  (Number(Lists.callsheet)* 60*7)"
+                    :disabled="isSingleCompleted || Lists.totalCompletedTime   >=  (Number(Lists.callsheet)* 60*7)"
                     @click="startTimeFn(props)"
                   >
                     <template
-                      v-if=" Lists.totalCompletedTime   >  (Number(Lists.callsheet)* 60*7)"
+                      v-if=" Lists.totalCompletedTime   >=  (Number(Lists.callsheet)* 60*7)"
                     >Pending</template>
                     <template
                       v-else
@@ -125,8 +125,7 @@ export default {
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
       // this.ScheduleId = dd + "M" + mm;
-      this.ScheduleId = "23M4";
-
+      this.ScheduleId = "20M4";
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
@@ -149,16 +148,21 @@ export default {
     AnalysisFn() {
       let notShooted = [];
       let list = this.Lists.list;
-      // let deletedList =
+      let PendingSummeryObj = [];
       for (let q = 0; q < list.length; q++) {
         if (list[q].startTime == 0) {
           notShooted.push(list[q]);
+          PendingSummeryObj.push({
+            Id: list[q].Id,
+            isDone: list[q].isDone
+          });
         }
       }
       this.$store.dispatch("setPendingShoots", {
         userId: this.userId,
         ScheduleId: this.ScheduleId,
-        list: notShooted
+        list: notShooted,
+        PendingSummeryObj: PendingSummeryObj
       });
     }
   }

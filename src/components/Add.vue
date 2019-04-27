@@ -187,6 +187,10 @@ export default {
         dateObj[v].totalTime = scheduler[dateObj[v].id].totalTime;
         dateObj[v].totalCompletedTime = 0;
         dateObj[v].callsheet = scheduler[dateObj[v].id].callsheet;
+        dateObj[v].locations = scheduler[dateObj[v].id].locations;
+        dateObj[v].equipment = scheduler[dateObj[v].id].equipment;
+        dateObj[v].characters = scheduler[dateObj[v].id].characters;
+        dateObj[v].camera = scheduler[dateObj[v].id].camera;
       }
       console.log(scheduler);
       this.scheduler = scheduler;
