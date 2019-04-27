@@ -102,7 +102,7 @@ export default {
         { text: "Time", value: "time" }
       ],
       userId: "123",
-      ScheduleId: "23M4"
+      ScheduleId: "25M4"
     };
   },
   mounted() {
@@ -124,8 +124,8 @@ export default {
       var today = new Date();
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
-      // this.ScheduleId = dd + "M" + mm;
-      this.ScheduleId = "20M4";
+      this.ScheduleId = dd + "M" + mm;
+      // this.ScheduleId = "20M4";
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
@@ -149,13 +149,16 @@ export default {
       let notShooted = [];
       let list = this.Lists.list;
       let PendingSummeryObj = [];
+      let shootIndex = 0
       for (let q = 0; q < list.length; q++) {
         if (list[q].startTime == 0) {
           notShooted.push(list[q]);
           PendingSummeryObj.push({
             Id: list[q].Id,
-            isDone: list[q].isDone
+            isDone: false,
+            shootIndex : shootIndex
           });
+          shootIndex++
         }
       }
       this.$store.dispatch("setPendingShoots", {
