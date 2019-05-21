@@ -23,6 +23,9 @@
           <v-icon left>{{item.icon}}</v-icon>
           {{item.title}}
         </v-btn>
+        <v-btn flat v-if="userIsAuthenticated" @click="LogoutFn()">
+          <v-icon left>face</v-icon>Logout
+        </v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <main>
@@ -41,19 +44,18 @@ export default {
   computed: {
     menuItems() {
       let menuItems;
-      // if (this.userIsAuthenticated) {
+      if (this.userIsAuthenticated) {
         menuItems = [
           { icon: "person", title: "ADD", link: "/add" },
           { icon: "person", title: "Today", link: "/today" },
-          { icon: "person", title: "Pending", link: "/pending"}
-          
+          { icon: "person", title: "Pending", link: "/pending" }
         ];
-      // } else {
-      //   menuItems = [
-      //     { icon: "face", title: "Sign up", link: "/signup" },
-      //     { icon: "lock_open", title: "Sign in", link: "/signin" }
-      //   ];
-      // }
+      } else {
+        menuItems = [
+          { icon: "face", title: "Sign up", link: "/signup" },
+          { icon: "lock_open", title: "Sign in", link: "/signin" }
+        ];
+      }
       return menuItems;
     },
     userIsAuthenticated() {
@@ -63,11 +65,17 @@ export default {
       ) {
         return true;
       } else {
+        console.log(this.$store.getters.user);
         return false;
       }
     }
   },
   methods: {
+    LogoutFn() {
+      localStorage.clear();
+      this.$router.push("/signin");
+      this.$store.dispatch("logoutFn"); 
+    }
   }
 };
 </script>

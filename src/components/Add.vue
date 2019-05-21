@@ -150,7 +150,7 @@ export default {
         objx.Subject = sub;
         objx.ShotSize = obj[i].ShotSize;
         objx.Camera = obj[i].Camera;
-        objx.Angle = obj[i].Angle;
+        // objx.Angle = obj[i].Angle;
         objx.Movement = obj[i].Movement;
         objx.Equipment = obj[i].Equipment;
         objx.Lense = obj[i].Lense;
