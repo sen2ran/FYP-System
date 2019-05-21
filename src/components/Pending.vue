@@ -46,7 +46,7 @@
                     <li>
                       <p
                         class="upperCase"
-                      >Setup Time + Shot Time : {{Number(singlePending.ShootTime) + Number(singlePending.SetupTime )}} Min</p>
+                      >Setup Time + Shoot Time : {{Number(singlePending.ShootTime) + Number(singlePending.SetupTime )}} Min</p>
                     </li>
                     <li>
                       <p class="upperCase">Character : {{toStringFn(singlePending.Subject)}}</p>
@@ -203,6 +203,7 @@ export default {
         bodyFormData.set("location", tmp.Location);
         bodyFormData.set("shotSize", tmp.ShotSize);
         bodyFormData.set("movement", tmp.Movement);
+         bodyFormData.set("fileName", localStorage.getItem("fileName"));
 
         instance
           .post("/predict", bodyFormData)

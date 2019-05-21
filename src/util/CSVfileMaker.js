@@ -7,7 +7,7 @@ export default function (JSONData, ReportTitle, ShowLabel) {
     var CSV = '';
     //Set Report title in first row or line
 
-    CSV += ReportTitle + '\r\n\n';
+    // CSV += ReportTitle + '\r\n\n';
 
     //This condition will generate the Label/Header
     if (ShowLabel) {
@@ -47,7 +47,7 @@ export default function (JSONData, ReportTitle, ShowLabel) {
     }
 
     //Generate a file name
-    var fileName = "MyReport_";
+    var fileName = "FYP_";
     //this will remove the blank-spaces from the title and replace it with an underscore
     fileName += ReportTitle.replace(/ /g, "_");
 

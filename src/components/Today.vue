@@ -89,6 +89,8 @@
 
 <script>
 import toString from "@/util/ArrayToStringComa.js";
+import CSVfileMaker from "@/util/CSVfileMaker.js";
+
 import moment from "moment";
 
 export default {
@@ -175,7 +177,10 @@ export default {
       let notShooted = [];
       let list = this.Lists.list;
       let PendingSummeryObj = [];
+      let CSVJson = [];
       let shootIndex = 0;
+      // console.log(list);
+
       for (let q = 0; q < list.length; q++) {
         if (list[q].startTime == 0) {
           notShooted.push(list[q]);
@@ -185,8 +190,61 @@ export default {
             shootIndex: shootIndex
           });
           shootIndex++;
+        } else {
+          let label =
+            parseFloat(list[q].SetupTime) + parseFloat(list[q].ShootTime) >
+            list[q].totalCompletedTime
+              ? 0
+              : 1;
+
+
+
+          // IF
+
+          // let label =
+          //   parseFloat(list[q].SetupTime) + parseFloat(list[q].ShootTime) >
+          //   list[q].totalCompletedTime
+          //     ? 0
+          //     : 1;
+
+          let Id = list[q].Id;
+          let tmpId = Id.split("M");
+
+          let tmpMonth = tmpId[1].split("S")[0];
+          let tmpDate = tmpId[0];
+
+          let date = tmpDate + "." + tmpMonth;
+          let Subject = list[q].Subject;
+          let sub = "";
+          for (let index = 0; index < Subject.length; index++) {
+            // console.log(Subject[index]);
+            if (index == 0) {
+              sub = Subject[index];
+            } else {
+              sub = sub + "/" + Subject[index];
+            }
+          }
+          CSVJson.push({
+            Day: date,
+            Setup: list[q].Setup,
+            Shot: list[q].Shot,
+            Subject: sub,
+            ShotSize: list[q].ShotSize,
+            Camera: list[q].Camera,
+            Movement: list[q].Movement,
+            Equipment: list[q].Equipment,
+            Lense: list[q].Lense,
+            ScriptTime: list[q].ScriptTime,
+            SetupTime: list[q].SetupTime,
+            ShootTime: list[q].ShootTime,
+            Location: list[q].Location,
+            CallSheet: list[q].CallSheet,
+            Label: label
+          });
         }
       }
+      localStorage.setItem("fileName", "FYP_" + String(Number(new Date())));
+      CSVfileMaker(CSVJson, String(Number(new Date())), true);
       this.$store.dispatch("setPendingShoots", {
         userId: this.userId,
         ScheduleId: this.ScheduleId,
