@@ -2,10 +2,16 @@
   <v-layout row pt-2>
     <v-flex xs12>
       <v-card>
-        <h1>{{ScheduleId}}</h1>
+        <h1>{{ScheduleIdDate}}</h1>
+        <br>
+        <br>
+        <center>
+          <h1 v-if="!isToday" style="color : red">We Don't Have A Schedule Today !</h1>
+        </center>
+
         <v-card-title>
           <template v-if="Lists">
-            Callsheet Time :{{ Number(Lists.callsheet)* 60*7}} Min
+            Callsheet Time : {{ Number(Lists.callsheet)* 60*7}} Min
             <br>
             Total Time : {{Lists.totalTime}} Min
             <br>
@@ -17,6 +23,7 @@
           </template>
           <v-spacer></v-spacer>
           <v-text-field
+            v-if="Lists"
             v-model="search"
             append-icon="search"
             label="Search"
@@ -30,14 +37,16 @@
             <template v-slot:items="props">
               <td>{{ props.item.Id }}</td>
               <!-- <td>{{ moment(props.item.TimeStamp).format("MMM Do YY")}}</td> -->
-              <td>{{ props.item.Shot }}</td>
-              <td>{{ props.item.Subject }}</td>
-              <td>{{ props.item.Camera }}</td>
-              <td>{{ props.item.Movement }}</td>
-              <td>{{ props.item.Equipment }}</td>
-              <td>{{ props.item.Lense }}</td>
-              <td>{{ props.item.Location }}</td>
-              <td>{{ props.item.ShootTime }} Min + {{ props.item.SetupTime }} Min = {{ Number(props.item.ShootTime) + Number(props.item.SetupTime)}} Min</td>
+              <td class="upperCase">{{ props.item.Setup }}</td>
+              <td class="upperCase">{{ props.item.Shot }}</td>
+              <td class="upperCase">{{ toStringFn(props.item.Subject) }}</td>
+              <td class="upperCase">{{ props.item.Camera }}</td>
+              <td class="upperCase">{{ props.item.Equipment }}</td>
+              <td class="upperCase">{{ props.item.Lense }}</td>
+              <td class="upperCase">{{ props.item.Location }}</td>
+              <td
+                class="upperCase"
+              >{{ props.item.ShootTime }} Min + {{ props.item.SetupTime }} Min = {{ Number(props.item.ShootTime) + Number(props.item.SetupTime)}} Min</td>
               <!-- <td>{{ props.item.SetupTime }}</td> -->
               <!-- <template v-if="Lists.totalCompletedTime   >  (Number(Lists.callsheet)* 60*7) ">
                 <td>Pending</td>
@@ -52,9 +61,7 @@
                     <template
                       v-if=" Lists.totalCompletedTime   >=  (Number(Lists.callsheet)* 60*7)"
                     >Pending</template>
-                    <template
-                      v-else
-                    >Start Time {{(Number(Lists.callsheet)* 60*7) }} || {{Lists.totalCompletedTime}}</template>
+                    <template v-else>Start Time</template>
                   </v-btn>
                 </td>
               </template>
@@ -81,6 +88,7 @@
 </template>
 
 <script>
+import toString from "@/util/ArrayToStringComa.js";
 import moment from "moment";
 
 export default {
@@ -90,10 +98,10 @@ export default {
       headers: [
         { text: "Id", value: "id" },
         // { text: "Day", value: "Day" },
+        { text: "Setup", value: "Setup" },
         { text: "Shot", value: "Shot" },
         { text: "Subject", value: "Subject" },
         { text: "Camera", value: "Camera" },
-        { text: "Movement", value: "Movement" },
         { text: "Equipment", value: "Equipment" },
         { text: "Lense", value: "Lense" },
         { text: "Location", value: "Location" },
@@ -101,7 +109,7 @@ export default {
         // { text: "SetupTime", value: "SetupTime" },
         { text: "Time", value: "time" }
       ],
-      userId: "123",
+      // : "123",
       ScheduleId: "25M4"
     };
   },
@@ -109,23 +117,41 @@ export default {
     this.initializeFn();
   },
   computed: {
+    userId() {
+      if (localStorage.getItem("userId")) {
+        return localStorage.getItem("userId");
+      } else {
+        return null;
+      }
+    },
     Lists() {
       return this.$store.getters.todayDateData;
     },
+    isToday() {
+      return this.$store.getters.isToday;
+    },
     isSingleCompleted() {
       return this.$store.getters.isSingleCompleted;
+    },
+    ScheduleIdDate() {
+      let day = this.ScheduleId.split("M")[0];
+      let month = this.ScheduleId.split("M")[1];
+      return new Date(month + "/" + day + "/" + 2019);
     }
   },
   methods: {
     moment(date) {
       return moment(date);
     },
+    toStringFn(value) {
+      return toString(value);
+    },
     initializeFn() {
       var today = new Date();
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
       this.ScheduleId = dd + "M" + mm;
-      // this.ScheduleId = "20M4";
+      this.ScheduleId = "20M4";
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
@@ -149,16 +175,16 @@ export default {
       let notShooted = [];
       let list = this.Lists.list;
       let PendingSummeryObj = [];
-      let shootIndex = 0
+      let shootIndex = 0;
       for (let q = 0; q < list.length; q++) {
         if (list[q].startTime == 0) {
           notShooted.push(list[q]);
           PendingSummeryObj.push({
             Id: list[q].Id,
             isDone: false,
-            shootIndex : shootIndex
+            shootIndex: shootIndex
           });
-          shootIndex++
+          shootIndex++;
         }
       }
       this.$store.dispatch("setPendingShoots", {
@@ -173,4 +199,11 @@ export default {
 </script>
 
 <style>
+</style>
+
+
+<style>
+.upperCase {
+  text-transform: uppercase;
+}
 </style>

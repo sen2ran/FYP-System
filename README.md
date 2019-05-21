@@ -1,4 +1,4 @@
-# Senthu
+# Vibu
 
 ## Project setup
 ```

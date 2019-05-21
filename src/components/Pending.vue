@@ -1,15 +1,9 @@
 <template>
-  <!-- <div>
-  <h1>Sen2</h1>
-  <p>
-    {{pendingObjs}}
-  </p>
-  </div>-->
   <v-layout row pt-2 pl-2 pr-2>
     <v-flex xs12>
       <v-card>
         <v-card-title>
-          Hey !!!
+          <h1>Pending Shots</h1>
           <v-spacer></v-spacer>
         </v-card-title>
         <v-card-title>
@@ -26,21 +20,36 @@
             <v-flex xs12>
               <v-card>
                 <v-card-title>
-                  <h3 class="headline mb-0">Seletcted Shoot</h3>
+                  <h3 class="headline mb-0">Selected Shot</h3>
+                  <br>
                 </v-card-title>
                 <div pl-5>
+                  <center>
+                    <template v-if="label == 0">
+                      <h4 style="color : red">{{label}}</h4>
+                    </template>
+                    <template v-else>
+                      <h4 style="color : green">{{label}}</h4>
+                    </template>
+                  </center>
+                  <br>
                   <ul>
+                    <!-- <li>
+                      <p>Label : {{label}}</p>
+                    </li>-->
                     <li>
-                      <p>Equipment : {{singlePending.Equipment}}</p>
+                      <p class="upperCase">Equipment : {{singlePending.Equipment}}</p>
                     </li>
                     <li>
-                      <p>Location : {{singlePending.Location}}</p>
+                      <p class="upperCase">Location : {{singlePending.Location}}</p>
                     </li>
                     <li>
-                      <p>Setup Time + Shoot Time : {{Number(singlePending.ShootTime) + Number(singlePending.SetupTime )}} Min</p>
+                      <p
+                        class="upperCase"
+                      >Setup Time + Shot Time : {{Number(singlePending.ShootTime) + Number(singlePending.SetupTime )}} Min</p>
                     </li>
                     <li>
-                      <p>Character : {{singlePending.Subject}}</p>
+                      <p class="upperCase">Character : {{toStringFn(singlePending.Subject)}}</p>
                     </li>
                   </ul>
                 </div>
@@ -49,7 +58,15 @@
           </v-layout>
         </template>
         <v-layout row pt-1 pl-1 pr-1 pb-2>
-          <v-flex xs3 pt-1 pl-1 pr-1 pb-2 v-for="(date , index) in upcommingDatesForPending" :key="index">
+          <v-flex
+            xs3
+            pt-1
+            pl-1
+            pr-1
+            pb-2
+            v-for="(date , index) in upcommingDatesForPending"
+            :key="index"
+          >
             <v-card>
               <v-card-title>
                 <h3 class="headline mb-0">Shoot Id : {{date.id}}</h3>
@@ -57,22 +74,22 @@
               <div pl-5>
                 <ul>
                   <li>
-                    <p>callsheet: {{Number(date.callsheet) * 60 * 7}}</p>
+                    <p class="upperCase">callsheet: {{Number(date.callsheet) * 60 * 7}}</p>
                   </li>
                   <li>
-                    <p>date: {{date.date}}</p>
+                    <p class="upperCase">date: {{date.date}}</p>
                   </li>
                   <li>
-                    <p>Equipment : {{date.equipment}}</p>
+                    <p class="upperCase">Equipment : {{toStringFn(date.equipment)}}</p>
                   </li>
                   <li>
-                    <p>Location : {{date.locations}}</p>
+                    <p class="upperCase">Location : {{toStringFn(date.locations)}}</p>
                   </li>
                   <li>
-                    <p>Total Time : {{date.totalTime}}</p>
+                    <p class="upperCase">Total Time : {{date.totalTime}}</p>
                   </li>
                   <li>
-                    <p>Character : {{date.characters}}</p>
+                    <p class="upperCase">Character : {{toStringFn(date.characters)}}</p>
                   </li>
                 </ul>
               </div>
@@ -88,17 +105,36 @@
 </template>
 
 <script>
+import toString from "@/util/ArrayToStringComa.js";
+import axios from "axios";
+import * as firebase from "firebase";
+
+var baseUrl = "http://127.0.0.1:5000/";
+
+const instance = axios.create({
+  baseURL: baseUrl,
+  config: { headers: { "Content-Type": "multipart/form-data" } }
+});
+
 export default {
   data() {
     return {
       pedingShootingObjIndex: null,
-      upcommingDatesForPending: []
+      upcommingDatesForPending: [],
+      label: ""
     };
   },
   mounted() {
     this.initializeFn();
   },
   computed: {
+    userId() {
+      if (localStorage.getItem("userId")) {
+        return localStorage.getItem("userId");
+      } else {
+        return null;
+      }
+    },
     pendingObjs() {
       return this.$store.getters.pendingObjs;
     },
@@ -124,20 +160,64 @@ export default {
       var mm = String(today.getMonth() + 1);
       var str = parseFloat(dd + "." + mm);
       this.$store.dispatch("loadDataForPending", {
-        userId: "123",
+        userId: this.userId,
         date: str
       });
     },
     GetDetails(id, shootIndex, index) {
-      console.log(id);
       this.pedingShootingObjIndex = index;
       let tem = id;
       let date = id.split("S")[0];
       let shootIndex2 = shootIndex;
       this.$store.dispatch("loadDataForSinglePending", {
         id: date,
-        userId: "123",
+        userId: localStorage.getItem("userId"),
         shootIndex: shootIndex2
+      });
+      let tmp;
+      var loadDataForToday = firebase
+        .database()
+        .ref("users/"+localStorage.getItem("userId")+"/Pending/" + id.split("S")[0] + "/" + shootIndex);
+      loadDataForToday.once("value", snapshot => {
+        tmp = snapshot.val();
+
+        let strSubject = tmp.Subject;
+        let sub = "";
+        for (let index = 0; index < strSubject.length; index++) {
+          console.log(strSubject[index]);
+          if (index == 0) {
+            sub = strSubject[index];
+          } else {
+            sub = sub + "/" + strSubject[index];
+          }
+        }
+
+        console.log(sub);
+
+        var bodyFormData = new FormData();
+        bodyFormData.set(
+          "scriptTime",
+          Number(tmp.SetupTime) + Number(tmp.ShootTime)
+        );
+        bodyFormData.set("subject", sub);
+        bodyFormData.set("location", tmp.Location);
+        bodyFormData.set("shotSize", tmp.ShotSize);
+        bodyFormData.set("movement", tmp.Movement);
+
+        instance
+          .post("/predict", bodyFormData)
+          .then(response => {
+            console.log("Done : " + JSON.stringify(response.data.value));
+            if (response.data.value == 1) {
+              this.label = "Late";
+            } else {
+              this.label = "Early";
+            }
+          })
+          .catch(error => {
+            this.label = "Error";
+            console.log(error);
+          });
       });
     },
     AssignFilterFn(value) {
@@ -176,10 +256,13 @@ export default {
       }
       this.upcommingDatesForPending = upcommingDatesForPending;
     },
+    toStringFn(value) {
+      return toString(value);
+    },
     assignFn(id2, indexOfSummeryObj) {
       this.$store.dispatch("setPendingShootUpComingDate", {
         id: id2,
-        userId: "123",
+        userId: localStorage.getItem("userId"),
         pedingShootingObjIndex: this.pedingShootingObjIndex,
         list: this.singlePending,
         indexOfSummeryObj: indexOfSummeryObj,
@@ -192,6 +275,8 @@ export default {
   }
 };
 </script>
-
 <style>
+.upperCase {
+  text-transform: uppercase;
+}
 </style>

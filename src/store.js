@@ -19,6 +19,7 @@ export default new Vuex.Store({
     pendingObjs: null,
     upcommingDates: null,
     singlePending: null,
+    isToday: false,
   },
   mutations: {
     createMeetup(state, payload) {
@@ -43,11 +44,20 @@ export default new Vuex.Store({
     SET_SINGLE_PENDING(state, payload) {
       state.singlePending = payload.singlePendingShoot
     },
-    // SET_RESET(state, payload) {
-    //   state.singlePending = null;
-    // }
+    SET_TODAY_IS_SCHEDULE(state, payload) {
+      state.isToday = payload
+    },
+    SET_LOGOUT(state, payload) {
+      state.user = null;
+    }
   },
   actions: {
+    logoutFn({
+      commit
+    }, payload) {
+      commit('SET_LOGOUT')
+      
+    },
     loadDataForToday({
       commit
     }, payload) {
@@ -55,22 +65,28 @@ export default new Vuex.Store({
       var database = firebase.database();
       var loadDataForToday = firebase.database().ref('users/' + payload.userId + '/Scheduler/' + payload.ScheduleId);
       loadDataForToday.on('value', function (snapshot) {
-        commit('SET_LOAD_DATA_FOR_TODAY', snapshot.val())
-        var tmp = snapshot.val().list
-        console.log(tmp);
+        console.log(snapshot.val());
+        if (snapshot.val()) {
+          commit('SET_TODAY_IS_SCHEDULE', true)
+          commit('SET_LOAD_DATA_FOR_TODAY', snapshot.val())
+          var tmp = snapshot.val().list
 
-        for (let q = 0; q < tmp.length; q++) {
-          if (tmp[q].startTime > 0 && tmp[q].endTime == 0) {
-            commit('SET_IS_SINGLE_COMPLETED', true)
+          for (let q = 0; q < tmp.length; q++) {
+            if (tmp[q].startTime > 0 && tmp[q].endTime == 0) {
+              commit('SET_IS_SINGLE_COMPLETED', true)
+            }
           }
+        } else {
+          commit('SET_TODAY_IS_SCHEDULE', false)
         }
+
       });
     },
     makeProject({
       commit
     }, payload) {
       var database = firebase.database();
-      firebase.database().ref('users/123').set({
+      firebase.database().ref('users/' + localStorage.getItem("userId")).set({
         Name: payload.Name,
         Scheduler: payload.Scheduler,
         SummeryObj: payload.SummeryObj,
@@ -168,7 +184,7 @@ export default new Vuex.Store({
       let totalTime;
       let listLength;
       console.log(payload);
-      var loadDataFormId = firebase.database().ref('users/' + payload.userId + '/Scheduler/' + payload.id);
+      var loadDataFormId = firebase.database().ref('users/' + localStorage.getItem("userId") + '/Scheduler/' + payload.id);
       loadDataFormId.once('value', function (snapshot) {
         console.log(snapshot.val());
         totalTime = payload.totalTime + snapshot.val().totalTime
@@ -266,6 +282,8 @@ export default new Vuex.Store({
     loadDataForPending({
       commit
     }, payload) {
+      console.log(payload);
+      
       let listObj
       let pendingObj
       let dateObj = []
@@ -306,8 +324,8 @@ export default new Vuex.Store({
           user => {
             const newUser = {
               id: user.user.uid,
-              registeredMeetups: [],
             }
+            localStorage.setItem("userId", user.user.uid)
             commit('setUser', newUser)
           }
         )
@@ -323,14 +341,19 @@ export default new Vuex.Store({
       firebase.auth().signInWithEmailAndPassword(payload.email, payload.password)
         .then(
           user => {
-            // console.log(user.user.uid);
             const newUser = {
               id: user.user.uid,
-              registeredMeetups: [],
             }
+            localStorage.setItem("userId", user.user.uid)
+
+            var checkUser = firebase.database().ref('users/' + localStorage.getItem("userId"));
+            checkUser.once('value', function (snapshot) {
+              let checking = snapshot.val()
+              if (checking) {
+              }
+            })
             commit('setUser', newUser)
-          }
-        )
+          })
         .catch(
           error => {
             console.log(error);
@@ -359,6 +382,10 @@ export default new Vuex.Store({
     },
     singlePending(state) {
       return state.singlePending
-    }
+    },
+    isToday(state) {
+      return state.isToday
+    },
+
   }
 })
