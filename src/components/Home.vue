@@ -17,7 +17,7 @@
 export default {
   computed : {
     items(){
-      return this.$store.getters.featuredMeetups 
+      return this.$store.getters.featuredMeetups  
     }
   },
   // data() {
