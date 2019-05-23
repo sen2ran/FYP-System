@@ -21,11 +21,6 @@ new Vue({
       databaseURL: "https://planfilmy.firebaseio.com",
       projectId: "planfilmy",
       storageBucket: "planfilmy.appspot.com",
-      // apiKey: "AIzaSyBrl2GbcXKqvlatKL_iwzoOxXzz34xhGos",
-      // authDomain: "devmeetup-7c887.firebaseapp.com",
-      // databaseURL: "https://devmeetup-7c887.firebaseio.com",
-      // projectId: "devmeetup-7c887",
-      // storageBucket: "devmeetup-7c887.appspot.com",
     })
   }
 }).$mount('#app')
