@@ -25,11 +25,24 @@
                 </v-card-title>
                 <div pl-5>
                   <center>
-                    <template v-if="label == 'May Get Late !'">
+                    <!-- <template v-if="label == 'May Get Late !'">
                       <h4 style="color : red">{{label}}</h4>
                     </template>
                     <template v-else>
                       <h4 style="color : green">{{label}}</h4>
+                    </template>-->
+
+                    <template v-if="label == 'MIGHT FINISH EARLY'">
+                      <h4 style="color : green">{{label}}</h4>
+                    </template>
+                    <template v-else-if="label == 'WILL FINISH ALMOST ON TIME'">
+                      <h4 style="color : orange">{{label}}</h4>
+                    </template>
+                    <template v-else-if="label == 'MIGHT FINISH LATE'">
+                      <h4 style="color : red">{{label}}</h4>
+                    </template>
+                    <template v-else>
+                      <h4 style="color : red">PREDICTION NOT AVAILABLE</h4>
                     </template>
                   </center>
                   <br>
@@ -69,7 +82,14 @@
                 <h3 class="headline mb-0">Shoot Id : {{date.id}}</h3>
               </v-card-title>
               <div pl-5>
+                <center>
+
+                    <h4 style="color : orange" class="upperCase">{{(Number(date.callsheet) * 60 * 7) - date.totalTime}} minutes available </h4>
+                </center>
+                <br>
                 <ul>
+                  <!-- <li> -->
+                  <!-- </li> -->
                   <li>
                     <p class="upperCase">callsheet: {{Number(date.callsheet) * 60 * 7}}</p>
                   </li>
@@ -102,7 +122,8 @@
 </template>
 
 <script>
-/* eslint-disable */ 
+/* eslint-disable */
+
 import toString from "@/util/ArrayToStringComa.js";
 import axios from "axios";
 import * as firebase from "firebase";
@@ -175,7 +196,14 @@ export default {
       let tmp;
       var loadDataForToday = firebase
         .database()
-        .ref("users/"+localStorage.getItem("userId")+"/Pending/" + id.split("S")[0] + "/" + shootIndex);
+        .ref(
+          "users/" +
+            localStorage.getItem("userId") +
+            "/Pending/" +
+            id.split("S")[0] +
+            "/" +
+            shootIndex
+        );
       loadDataForToday.once("value", snapshot => {
         tmp = snapshot.val();
 
@@ -207,10 +235,18 @@ export default {
           .post("/predict", bodyFormData)
           .then(response => {
             console.log("Done : " + JSON.stringify(response.data.value));
-            if (response.data.value == 1) {
-              this.label = "May Get Late !";
-            } else {
-              this.label = "Not Late";
+            // if (response.data.value == 1) {
+            //   this.label = "May Get Late !";
+            // } else {
+            //   this.label = "Not Late";
+            // }
+
+            if (response.data.value == 0) {
+              this.label = "MIGHT FINISH EARLY";
+            } else if (response.data.value == 1) {
+              this.label = "WILL FINISH ALMOST ON TIME";
+            } else if (response.data.value == 2) {
+              this.label = "MIGHT FINISH LATE";
             }
           })
           .catch(error => {

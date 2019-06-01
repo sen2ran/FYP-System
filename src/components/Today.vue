@@ -18,7 +18,7 @@
             Completed Time : {{Lists.totalCompletedTime}} Min
             <br>
             <template v-if="Lists.totalCompletedTime  >=   (Number(Lists.callsheet)* 60*7) ">
-              <v-btn color="danger" @click="AnalysisFn()">Analysis</v-btn>
+              <v-btn color="danger" :disabled="Lists.isComplelte" @click="AnalysisFn()">Analysis</v-btn>
             </template>
           </template>
           <v-spacer></v-spacer>
@@ -88,7 +88,8 @@
 </template>
 
 <script>
-/* eslint-disable */ 
+/* eslint-disable */
+
 import toString from "@/util/ArrayToStringComa.js";
 import CSVfileMaker from "@/util/CSVfileMaker.js";
 
@@ -192,21 +193,34 @@ export default {
           });
           shootIndex++;
         } else {
-          let label =
-            parseFloat(list[q].SetupTime) + parseFloat(list[q].ShootTime) >
-            list[q].totalCompletedTime
-              ? 0
-              : 1;
+          let label;
 
-
-
-          // IF
-
-          // let label =
+          // //Binary  Start
+          // label =
           //   parseFloat(list[q].SetupTime) + parseFloat(list[q].ShootTime) >
           //   list[q].totalCompletedTime
           //     ? 0
           //     : 1;
+          // //Binary  End
+
+          //Tenary Start
+          let estimatedTime =
+            parseFloat(list[q].SetupTime) + parseFloat(list[q].ShootTime);
+
+          let earlyTime = estimatedTime - estimatedTime / 5;
+          let lateTime = estimatedTime + estimatedTime / 5;
+
+          let completedTime = list[q].totalCompletedTime;
+
+          if (earlyTime > completedTime) {
+            label = 0;
+          } else if (earlyTime < completedTime < lateTime) {
+            label = 1;
+          } else if (lateTime < completedTime) {
+            label = 2;
+          }
+
+          //Tenary End
 
           let Id = list[q].Id;
           let tmpId = Id.split("M");
@@ -244,13 +258,12 @@ export default {
           });
         }
       }
-      localStorage.setItem("fileName", "FYP_" + String(Number(new Date())));
-      CSVfileMaker(CSVJson, String(Number(new Date())), true);
       this.$store.dispatch("setPendingShoots", {
         userId: this.userId,
         ScheduleId: this.ScheduleId,
         list: notShooted,
-        PendingSummeryObj: PendingSummeryObj
+        PendingSummeryObj: PendingSummeryObj,
+        complete: CSVJson
       });
     }
   }

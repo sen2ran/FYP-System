@@ -44,7 +44,8 @@
 </template>
 
 <script>
-/* eslint-disable */ 
+/* eslint-disable */
+
 import moment from "moment";
 export default {
   data() {
@@ -186,6 +187,7 @@ export default {
       for (let v = 0; v < dateObj.length; v++) {
         scheduler[dateObj[v].id] = this.dateFn(dates[v], arrays, dateObj[v].id);
         dateObj[v].totalTime = scheduler[dateObj[v].id].totalTime;
+        dateObj[v].isComplelte = false;
         dateObj[v].totalCompletedTime = 0;
         dateObj[v].callsheet = scheduler[dateObj[v].id].callsheet;
         dateObj[v].locations = scheduler[dateObj[v].id].locations;
@@ -245,6 +247,7 @@ export default {
         equipment: equipment,
         totalTime: totalTime,
         callsheet: callsheet,
+        isComplelte : false,
         totalCompletedTime: 0
       });
       // this.obj = arr;

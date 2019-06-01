@@ -1,10 +1,13 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
-/* eslint-disable */ 
+/* eslint-disable */
 import Vue from 'vue'
 import Vuex from 'vuex'
 import * as firebase from 'firebase'
 import router from './router'
+
+
+import CSVfileMaker from "@/util/CSVfileMaker.js";
 
 
 Vue.use(Vuex)
@@ -57,7 +60,7 @@ export default new Vuex.Store({
       commit
     }, payload) {
       commit('SET_LOGOUT')
-      
+
     },
     loadDataForToday({
       commit
@@ -233,10 +236,13 @@ export default new Vuex.Store({
       commit
     }, payload) {
       console.log(payload);
+
       let listObj;
+      let completeList
       let PendingSummeryObj;
       let payloadPendingSummeryObj = payload.PendingSummeryObj
-      var database = firebase.database();
+      let complete = payload.complete
+
       var loadDataForPendingSummeryObj = firebase.database().ref('users/' + payload.userId + "/PendingSummeryObj");
       loadDataForPendingSummeryObj.once('value', function (snapshot) {
         listObj = snapshot.val()
@@ -245,28 +251,72 @@ export default new Vuex.Store({
         } else {
           PendingSummeryObj = listObj.concat(payloadPendingSummeryObj)
         }
-        // console.log(PendingSummeryObj);
-        firebase.database().ref('users/' + payload.userId + '/Pending').update({
-          [payload.ScheduleId]: payload.list
-        }, function (error) {
-          if (error) {
-            console.log("Error !!");
+        var loadDataForPendingSummeryObj = firebase.database().ref('users/' + payload.userId + "/CompletedList");
+        loadDataForPendingSummeryObj.once('value', function (res) {
+          console.log(res.val());
+          if (res.val() == null) {
+            completeList = complete
           } else {
-            console.log("Successfully !!!");
-            firebase.database().ref('users/' + payload.userId).update({
-              PendingSummeryObj: PendingSummeryObj
-            }, function (error) {
-              if (error) {
-                console.log("Error !!");
-              } else {
-                console.log("Successfully !!!");
-                router.push('/pending')
-                commit('SET_ISADDED', true)
-              }
-            });
+            completeList = res.val().concat(complete)
           }
+          firebase.database().ref('users/' + payload.userId + '/Pending').update({
+            [payload.ScheduleId]: payload.list
+          }, function (error) {
+            if (error) {
+              console.log("Error !!");
+            } else {
+              console.log("Successfully !!!");
+              firebase.database().ref('users/' + payload.userId).update({
+                PendingSummeryObj: PendingSummeryObj,
+                CompletedList: completeList
+              }, function (error) {
+                if (error) {
+                  console.log("Error !!");
+                } else {
+                  firebase.database().ref('users/' + payload.userId + '/Pending').update({
+                    [payload.ScheduleId]: payload.list
+                  }, function (error) {
+                    if (error) {
+                      console.log("Error !!");
+                    } else {
+                      console.log("Successfully !!!");
+                      firebase.database().ref('users/' + payload.userId + '/Scheduler/' + payload.ScheduleId).update({
+                        isComplelte: true
+                      }, function (error) {
+                        if (error) {
+                          console.log("Error !!");
+                        } else {
+                          firebase.database().ref('users/' + payload.userId + '/Pending').update({
+                            [payload.ScheduleId]: payload.list
+                          }, function (error) {
+                            if (error) {
+                              console.log("Error !!");
+                            } else {
+                              console.log("Successfully !!!");
+                              var loadDataForPendingSummeryObj = firebase.database().ref('users/' + payload.userId + "/CompletedList");
+                              loadDataForPendingSummeryObj.once('value', function (response) {
+                                let name = String(Number(new Date()))
+                                localStorage.setItem("fileName", "FYP_" + name);
+                                CSVfileMaker(response.val(), name, true);
+                                console.log("Successfully !!!");
+                                router.push('/pending')
+                                commit('SET_ISADDED', true)
+                              })
+                            }
+                          });
+                          console.log("Successfully !!!");
+                        }
+                      });
+                    }
+                  });
+                  console.log("Successfully !!!");
+                }
+              });
+            }
+          });
         });
       });
+
     },
     loadDataForSinglePending({
       commit
@@ -284,7 +334,7 @@ export default new Vuex.Store({
       commit
     }, payload) {
       console.log(payload);
-      
+
       let listObj
       let pendingObj
       let dateObj = []
