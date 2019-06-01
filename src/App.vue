@@ -65,7 +65,7 @@ export default {
       ) {
         return true;
       } else {
-        console.log(this.$store.getters.user);
+        // console.log(this.$store.getters.user);
         return false;
       }
     }

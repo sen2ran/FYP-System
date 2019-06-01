@@ -25,7 +25,7 @@
                 </v-card-title>
                 <div pl-5>
                   <center>
-                    <template v-if="label == 0">
+                    <template v-if="label == 'May Get Late !'">
                       <h4 style="color : red">{{label}}</h4>
                     </template>
                     <template v-else>
@@ -34,9 +34,6 @@
                   </center>
                   <br>
                   <ul>
-                    <!-- <li>
-                      <p>Label : {{label}}</p>
-                    </li>-->
                     <li>
                       <p class="upperCase">Equipment : {{singlePending.Equipment}}</p>
                     </li>
@@ -105,6 +102,7 @@
 </template>
 
 <script>
+/* eslint-disable */ 
 import toString from "@/util/ArrayToStringComa.js";
 import axios from "axios";
 import * as firebase from "firebase";
@@ -203,16 +201,16 @@ export default {
         bodyFormData.set("location", tmp.Location);
         bodyFormData.set("shotSize", tmp.ShotSize);
         bodyFormData.set("movement", tmp.Movement);
-         bodyFormData.set("fileName", localStorage.getItem("fileName"));
+        bodyFormData.set("fileName", localStorage.getItem("fileName"));
 
         instance
           .post("/predict", bodyFormData)
           .then(response => {
             console.log("Done : " + JSON.stringify(response.data.value));
             if (response.data.value == 1) {
-              this.label = "Late";
+              this.label = "May Get Late !";
             } else {
-              this.label = "Early";
+              this.label = "Not Late";
             }
           })
           .catch(error => {

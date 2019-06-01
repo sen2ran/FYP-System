@@ -44,6 +44,7 @@
 </template>
 
 <script>
+/* eslint-disable */ 
 import moment from "moment";
 export default {
   data() {

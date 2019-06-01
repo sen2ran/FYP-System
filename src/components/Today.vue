@@ -88,6 +88,7 @@
 </template>
 
 <script>
+/* eslint-disable */ 
 import toString from "@/util/ArrayToStringComa.js";
 import CSVfileMaker from "@/util/CSVfileMaker.js";
 
@@ -152,8 +153,8 @@ export default {
       var today = new Date();
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
-      this.ScheduleId = dd + "M" + mm;
-      this.ScheduleId = "20M4";
+      // this.ScheduleId = dd + "M" + mm;
+      this.ScheduleId = "23M4";
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId

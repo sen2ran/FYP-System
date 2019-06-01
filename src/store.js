@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
+/* eslint-disable */ 
 import Vue from 'vue'
 import Vuex from 'vuex'
 import * as firebase from 'firebase'

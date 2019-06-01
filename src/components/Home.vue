@@ -15,32 +15,6 @@
 
 <script>
 export default {
-  computed : {
-    items(){
-      return this.$store.getters.featuredMeetups  
-    }
-  },
-  // data() {
-  //   return {
-  //     items: [
-  //       {
-  //         id: "1",
-  //         title: "Vannakam 1",
-  //         src: "https://cdn.vuetifyjs.com/images/carousel/squirrel.jpg"
-  //       },
-  //       {
-  //         id: "2",
-  //         title: "Vannakam 2",
-  //         src: "https://cdn.vuetifyjs.com/images/carousel/sky.jpg"
-  //       }
-  //     ]
-  //   };
-  // },
-  methods: {
-    onLoadMeetup(id) {
-      this.$router.push("/meetups/" + id);
-    }
-  }
 };
 </script>
 
