@@ -4,10 +4,20 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import * as firebase from 'firebase'
+import axios from "axios";
+
 import router from './router'
 
 
 import CSVfileMaker from "@/util/CSVfileMaker.js";
+
+
+var baseUrl = "http://127.0.0.1:5000/";
+
+const instance = axios.create({
+  baseURL: baseUrl,
+  config: { headers: { "Content-Type": "multipart/form-data" } }
+});
 
 
 Vue.use(Vuex)
@@ -24,6 +34,7 @@ export default new Vuex.Store({
     upcommingDates: null,
     singlePending: null,
     isToday: false,
+    isAssigned: null
   },
   mutations: {
     createMeetup(state, payload) {
@@ -53,6 +64,10 @@ export default new Vuex.Store({
     },
     SET_LOGOUT(state, payload) {
       state.user = null;
+      state.isToday = false;
+    },
+    SET_RESET(state, payload) {
+      state.isAssigned = payload
     }
   },
   actions: {
@@ -221,7 +236,7 @@ export default new Vuex.Store({
                         console.log("Error !!");
                       } else {
                         console.log("Successfully !!!");
-                        // commit('SET_RESET')
+                        commit('SET_RESET', Number(new Date()))
                       }
                     });
                   }
@@ -292,16 +307,53 @@ export default new Vuex.Store({
                             if (error) {
                               console.log("Error !!");
                             } else {
-                              console.log("Successfully !!!");
-                              var loadDataForPendingSummeryObj = firebase.database().ref('users/' + payload.userId + "/CompletedList");
-                              loadDataForPendingSummeryObj.once('value', function (response) {
-                                let name = String(Number(new Date()))
-                                localStorage.setItem("fileName", "FYP_" + name);
-                                CSVfileMaker(response.val(), name, true);
-                                console.log("Successfully !!!");
-                                router.push('/pending')
-                                commit('SET_ISADDED', true)
+                              let SummeryObjIndex
+                              let SumObj
+                              var SummeryObj = firebase.database().ref('users/' + payload.userId + "/SummeryObj/");
+                              SummeryObj.once('value', function (snapshot) {
+                                SumObj = snapshot.val()
+                                for (let w = 0; w < SumObj.length; w++) {
+                                  if (SumObj[w].id == payload.ScheduleId) {
+                                    SummeryObjIndex = w
+                                    console.log(SummeryObjIndex);
+                                  }
+                                }
+                                firebase.database().ref('users/' + payload.userId + "/SummeryObj/" + SummeryObjIndex).update({
+                                  isComplelte: true
+                                }, function (error) {
+                                  if (error) {
+                                    console.log("Error !!");
+                                  } else {
+                                    console.log("Successfully !!!");
+                                    var loadDataForPendingSummeryObj = firebase.database().ref('users/' + payload.userId + "/CompletedList");
+                                    loadDataForPendingSummeryObj.once('value', function (response) {
+                                      let name = String(Number(new Date()))
+                                      localStorage.setItem("fileName", "FYP_" + name);
+                                      CSVfileMaker(response.val(), name, true);
+
+
+                                      var bodyFormData = new FormData();
+                                      bodyFormData.set("fileName", localStorage.getItem("fileName"))
+                                      setTimeout(() => {
+                                        instance
+                                          .post("/train", bodyFormData)
+                                          .then(response => {
+                                            console.log("Done : " + JSON.stringify(response.data.value));
+                                          })
+                                          .catch(error => {
+                                            this.label = "Error";
+                                            console.log(error);
+                                          });
+                                      }, 2000);
+                                      console.log("Successfully !!!");
+                                      router.push('/pending')
+                                      commit('SET_ISADDED', true)
+                                    })
+                                  }
+                                })
+
                               })
+                              console.log("Successfully !!!");
                             }
                           });
                           console.log("Successfully !!!");
@@ -342,12 +394,18 @@ export default new Vuex.Store({
       loadDataForSummeryObj.on('value', function (snapshot) {
         listObj = snapshot.val()
         for (let i = 0; i < listObj.length; i++) {
-          if (parseFloat(listObj[i].date) >= payload.date) {
+          console.log(listObj[i].date, payload.date);
+          console.log(listObj[i].isComplelte);
+
+
+          // if (parseFloat(listObj[i].date) >= payload.date) {
+          if (!listObj[i].isComplelte) {
             dateObj.push({
               indexOfSummeryObj: i,
               ...listObj[i]
             })
           }
+          // }
         }
         console.log(dateObj); //getting Future 
         var loadDataForPedingObj = firebase.database().ref('users/' + payload.userId + "/PendingSummeryObj");
@@ -437,6 +495,9 @@ export default new Vuex.Store({
     isToday(state) {
       return state.isToday
     },
+    isAssigned(state) {
+      return state.isAssigned
+    }
 
   }
 })

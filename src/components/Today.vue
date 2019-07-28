@@ -2,7 +2,12 @@
   <v-layout row pt-2>
     <v-flex xs12>
       <v-card>
+        <center>
+          <h1>{{name}}</h1>
+        </center>
+        <br>
         <h1>{{ScheduleIdDate}}</h1>
+
         <br>
         <br>
         <center>
@@ -19,6 +24,9 @@
             <br>
             <template v-if="Lists.totalCompletedTime  >=   (Number(Lists.callsheet)* 60*7) ">
               <v-btn color="danger" :disabled="Lists.isComplelte" @click="AnalysisFn()">Analysis</v-btn>
+            </template>
+            <template v-if="!Lists.isComplelte">
+              <v-btn color="danger" :disabled="Lists.isComplelte" @click="AnalysisFn()">Add Day Break</v-btn>
             </template>
           </template>
           <v-spacer></v-spacer>
@@ -55,7 +63,7 @@
                 <td>
                   <v-btn
                     color="success"
-                    :disabled="isSingleCompleted || Lists.totalCompletedTime   >=  (Number(Lists.callsheet)* 60*7)"
+                    :disabled="isSingleCompleted || Lists.totalCompletedTime   >=  (Number(Lists.callsheet)* 60*7) || Lists.isComplelte"
                     @click="startTimeFn(props)"
                   >
                     <template
@@ -92,12 +100,14 @@
 
 import toString from "@/util/ArrayToStringComa.js";
 import CSVfileMaker from "@/util/CSVfileMaker.js";
+import * as firebase from "firebase";
 
 import moment from "moment";
 
 export default {
   data() {
     return {
+      name: null,
       search: "",
       headers: [
         { text: "Id", value: "id" },
@@ -119,6 +129,14 @@ export default {
   },
   mounted() {
     this.initializeFn();
+  },
+  watch: {
+    userId(val) {
+      var loadDataForToday = firebase.database().ref("users/" + this.userId);
+      loadDataForToday.on("value", function(snapshot) {
+        this.name = snapshot.val().name;
+      });
+    }
   },
   computed: {
     userId() {
@@ -154,11 +172,17 @@ export default {
       var today = new Date();
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
-      // this.ScheduleId = dd + "M" + mm;
-      this.ScheduleId = "23M4";
+      //this.ScheduleId = dd + "M" + mm;
+      this.ScheduleId = "3M12";
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
+      });
+
+      let name;
+      var loadDataForToday = firebase.database().ref("users/" + this.userId);
+      loadDataForToday.on("value", snapshot => {
+        this.name = snapshot.val().Name;
       });
     },
     startTimeFn(obj) {
@@ -212,13 +236,18 @@ export default {
 
           let completedTime = list[q].totalCompletedTime;
 
-          if (earlyTime > completedTime) {
-            label = 0;
-          } else if (earlyTime < completedTime < lateTime) {
-            label = 1;
-          } else if (lateTime < completedTime) {
+          console.log(earlyTime, completedTime, lateTime);
+
+          if (completedTime > lateTime) {
             label = 2;
+          } else {
+            if (completedTime < earlyTime) {
+              label = 0;
+            } else {
+              label = 1;
+            }
           }
+          console.log(label);
 
           //Tenary End
 

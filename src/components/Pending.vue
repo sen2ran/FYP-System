@@ -20,7 +20,7 @@
             <v-flex xs12>
               <v-card>
                 <v-card-title>
-                  <h3 class="headline mb-0">Selected Shot</h3>
+                  <h3 class="headline mb-0">{{singlePending.Id}}</h3>
                   <br>
                 </v-card-title>
                 <div pl-5>
@@ -79,12 +79,14 @@
           >
             <v-card>
               <v-card-title>
-                <h3 class="headline mb-0">Shoot Id : {{date.id}}</h3>
+                <h3 class="headline mb-0">Shoot Day : {{date.id}}</h3>
               </v-card-title>
               <div pl-5>
                 <center>
-
-                    <h4 style="color : orange" class="upperCase">{{(Number(date.callsheet) * 60 * 7) - date.totalTime}} minutes available </h4>
+                  <h4
+                    style="color : orange"
+                    class="upperCase"
+                  >{{(Number(date.callsheet) * 60 * 7) - date.totalTime}} minutes available</h4>
                 </center>
                 <br>
                 <ul>
@@ -162,6 +164,9 @@ export default {
     },
     singlePending() {
       return this.$store.getters.singlePending;
+    },
+    isAssigned() {
+      return this.$store.getters.isAssigned;
     }
   },
   watch: {
@@ -170,7 +175,9 @@ export default {
         this.AssignFilterFn(value);
       }
     },
-    upcommingDates(value) {}
+    isAssigned(value) {
+      this.initializeFn();
+    }
   },
   methods: {
     initializeFn() {
@@ -229,7 +236,7 @@ export default {
         bodyFormData.set("location", tmp.Location);
         bodyFormData.set("shotSize", tmp.ShotSize);
         bodyFormData.set("movement", tmp.Movement);
-        bodyFormData.set("fileName", localStorage.getItem("fileName"));
+        // bodyFormData.set("fileName", localStorage.getItem("fileName"));
 
         instance
           .post("/predict", bodyFormData)
@@ -264,6 +271,8 @@ export default {
       let camera = tmp.Camera;
       let equipment = tmp.Equipment;
       let upcommingDates = JSON.parse(JSON.stringify(this.upcommingDates));
+      console.log(upcommingDates);
+
       let upcommingDatesForPending = [];
 
       for (let i = 0; i < upcommingDates.length; i++) {
@@ -273,16 +282,24 @@ export default {
           Number(single.totalTime) + totalTime <=
           Number(single.callsheet) * 60 * 7
         ) {
+          console.log(1);
+
           //2nd location
-          if (single.locations.includes(location)) {
+          console.log(location);
+          console.log(single.locations);
+
+          if (single.locations.includes(location.toLowerCase())) {
+            console.log(2);
             //3rd characters
             let isThere = true;
             for (let j = 0; j < chars.length; j++) {
               if (!single.characters.includes(chars[j])) {
+                console.log(3);
                 isThere = false;
               }
             }
             if (isThere) {
+              console.log(4);
               //Equipment ,camera still remaing
               upcommingDatesForPending.push(single);
             }
