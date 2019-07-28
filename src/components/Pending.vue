@@ -4,6 +4,9 @@
       <v-card>
         <v-card-title>
           <h1>Pending Shots</h1>
+          <v-card-actions>
+            <v-btn color="success" @click="downloadFn()">Download new Shudle</v-btn>
+          </v-card-actions>
           <v-spacer></v-spacer>
         </v-card-title>
         <v-card-title>
@@ -21,7 +24,7 @@
               <v-card>
                 <v-card-title>
                   <h3 class="headline mb-0">{{singlePending.Id}}</h3>
-                  <br>
+                  <br />
                 </v-card-title>
                 <div pl-5>
                   <center>
@@ -45,7 +48,7 @@
                       <h4 style="color : red">PREDICTION NOT AVAILABLE</h4>
                     </template>
                   </center>
-                  <br>
+                  <br />
                   <ul>
                     <li>
                       <p class="upperCase">Equipment : {{singlePending.Equipment}}</p>
@@ -62,6 +65,10 @@
                       <p class="upperCase">Character : {{toStringFn(singlePending.Subject)}}</p>
                     </li>
                   </ul>
+
+                  <v-card-actions>
+                    <v-btn color="success" @click="autoAssignFn()">Auto Assign</v-btn>
+                  </v-card-actions>
                 </div>
               </v-card>
             </v-flex>
@@ -88,7 +95,7 @@
                     class="upperCase"
                   >{{(Number(date.callsheet) * 60 * 7) - date.totalTime}} minutes available</h4>
                 </center>
-                <br>
+                <br />
                 <ul>
                   <!-- <li> -->
                   <!-- </li> -->
@@ -310,6 +317,15 @@ export default {
     },
     toStringFn(value) {
       return toString(value);
+    },
+    autoAssignFn() {
+      let date = this.upcommingDatesForPending;
+      console.log(date);
+
+      // date.id
+      // date.indexOfSummeryObj
+
+      this.assignFn(date[0].id, date[0].indexOfSummeryObj);
     },
     assignFn(id2, indexOfSummeryObj) {
       this.$store.dispatch("setPendingShootUpComingDate", {

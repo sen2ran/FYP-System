@@ -173,7 +173,7 @@ export default {
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
       //this.ScheduleId = dd + "M" + mm;
-      this.ScheduleId = "3M12";
+      this.ScheduleId = "20M4";
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
