@@ -5,11 +5,11 @@
         <center>
           <h1>{{name}}</h1>
         </center>
-        <br>
+        <br />
         <h1>{{ScheduleIdDate}}</h1>
 
-        <br>
-        <br>
+        <br />
+        <br />
         <center>
           <h1 v-if="!isToday" style="color : red">We Don't Have A Schedule Today !</h1>
         </center>
@@ -17,16 +17,20 @@
         <v-card-title>
           <template v-if="Lists">
             Callsheet Time : {{ Number(Lists.callsheet)* 60*7}} Min
-            <br>
+            <br />
             Total Time : {{Lists.totalTime}} Min
-            <br>
+            <br />
             Completed Time : {{Lists.totalCompletedTime}} Min
-            <br>
+            <br />
             <template v-if="Lists.totalCompletedTime  >=   (Number(Lists.callsheet)* 60*7) ">
               <v-btn color="danger" :disabled="Lists.isComplelte" @click="AnalysisFn()">Analysis</v-btn>
             </template>
             <template v-if="!Lists.isComplelte">
-              <v-btn color="danger" :disabled="Lists.isComplelte" @click="AnalysisFn()">Add Day Break</v-btn>
+              <v-btn
+                color="danger"
+                :disabled="Lists.isComplelte"
+                @click="AnalysisFn()"
+              >Add Day Break</v-btn>
             </template>
           </template>
           <v-spacer></v-spacer>
@@ -47,9 +51,52 @@
               <!-- <td>{{ moment(props.item.TimeStamp).format("MMM Do YY")}}</td> -->
               <td class="upperCase">{{ props.item.Setup }}</td>
               <td class="upperCase">{{ props.item.Shot }}</td>
-              <td class="upperCase">{{ toStringFn(props.item.Subject) }}</td>
+              <td class="upperCase">
+                {{ toStringFn(props.item.Subject) }}
+                <br />
+
+                <!-- POPup Added -->
+                <v-dialog
+                  v-model="dialog"
+                  width="500"
+                  v-if="props.item.Subject.length != Lists.characters.length "
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-btn
+                      color="red lighten-2"
+                      dark
+                      v-on="on"
+                      @click="setCharacterFN(props.item.Subject ,props.index )"
+                    >Add Charater</v-btn>
+                  </template>
+
+                  <v-card>
+                    <v-card-title class="headline grey lighten-2" primary-title>Add Charater</v-card-title>
+                    <v-card-text>
+                      <template v-for="(Charater, index) in extraCharater">
+                        <v-checkbox
+                          :key="index"
+                          :value="Charater"
+                          :label="Charater"
+                          v-model="selectedCharater"
+                        ></v-checkbox>
+                      </template>
+                    </v-card-text>
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="primary" text @click="assignCharFn(props)">Add</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+
+                <!-- POPup end -->
+              </td>
               <td class="upperCase">{{ props.item.Camera }}</td>
-              <td class="upperCase">{{ props.item.Equipment }}</td>
+              <td class="upperCase">
+                {{ props.item.Equipment }}
+              </td>
               <td class="upperCase">{{ props.item.Lense }}</td>
               <td class="upperCase">{{ props.item.Location }}</td>
               <td
@@ -107,8 +154,11 @@ import moment from "moment";
 export default {
   data() {
     return {
+      dialog: false,
+      dialog2: false,
       name: null,
       search: "",
+      selectedIndex: null,
       headers: [
         { text: "Id", value: "id" },
         // { text: "Day", value: "Day" },
@@ -124,7 +174,9 @@ export default {
         { text: "Time", value: "time" }
       ],
       // : "123",
-      ScheduleId: "25M4"
+      ScheduleId: "25M4",
+      extraCharater: [],
+      selectedCharater: []
     };
   },
   mounted() {
@@ -136,6 +188,10 @@ export default {
       loadDataForToday.on("value", function(snapshot) {
         this.name = snapshot.val().name;
       });
+    },
+    Lists(val) {
+      this.extraCharater = [];
+      this.selectedCharater = [];
     }
   },
   computed: {
@@ -173,7 +229,7 @@ export default {
       var dd = String(today.getDate());
       var mm = String(today.getMonth() + 1);
       //this.ScheduleId = dd + "M" + mm;
-      this.ScheduleId = "20M4";
+      this.ScheduleId = "1M12";
       this.$store.dispatch("loadDataForToday", {
         userId: this.userId,
         ScheduleId: this.ScheduleId
@@ -197,6 +253,30 @@ export default {
         userId: this.userId,
         ScheduleId: this.ScheduleId,
         listIndex: obj.index
+      });
+    },
+    setCharacterFN(characters, index) {
+      this.selectedIndex = index;
+      let charater = this.Lists.characters;
+      let newArray = [];
+      this.extraCharater = [];
+      this.selectedCharater = [];
+      for (let i = 0; i < charater.length; i++) {
+        if (!characters.includes(charater[i])) {
+          newArray.push(charater[i]);
+        }
+      }
+      this.extraCharater = newArray;
+    },
+    assignCharFn(obj) {
+      this.dialog = false;
+      console.log(obj);
+
+      this.$store.dispatch("setCharater", {
+        userId: this.userId,
+        ScheduleId: this.ScheduleId,
+        listIndex: this.selectedIndex,
+        newChara: this.selectedCharater
       });
     },
     AnalysisFn() {

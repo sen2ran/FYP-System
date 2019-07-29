@@ -425,6 +425,24 @@ export default new Vuex.Store({
         })
       });
     },
+    setCharater({ commit }, payload) {
+      var loadDataFormId = firebase.database().ref('users/' + localStorage.getItem("userId") + '/Scheduler/' + payload.ScheduleId + '/list/' + payload.listIndex + '/Subject');
+      loadDataFormId.once('value', function (snapshot) {
+        let listObj = snapshot.val()
+        console.log(listObj);
+        for (let k = 0; k < payload.newChara.length; k++) {
+          listObj.push(payload.newChara[k])
+        }
+        console.log(listObj);
+        firebase.database().ref('users/' + localStorage.getItem("userId") + '/Scheduler/' + payload.ScheduleId + '/list/' + payload.listIndex).update({
+          Subject: listObj
+        }, function (error) {
+          if (error) {
+            console.log("Error !!");
+          }
+        })
+      });
+    },
     signUserup({
       commit
     }, payload) {

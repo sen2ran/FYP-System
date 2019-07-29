@@ -5,6 +5,7 @@ import Today from '@/components/Today'
 import Pending from '@/components/Pending'
 import Signin from '@/components/User/Signin'
 import Signup from '@/components/User/Signup'
+import Playground from '@/components/Playground'
 import Add from '@/components/Add'
 
 
@@ -40,6 +41,11 @@ export default new Router({
       path: '/signin',
       name: 'Signin',
       component: Signin
+    },
+    {
+      path: '/playground',
+      name: 'Playground',
+      component: Playground
     }
   ],
   mode: 'history'

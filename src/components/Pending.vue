@@ -318,6 +318,9 @@ export default {
     toStringFn(value) {
       return toString(value);
     },
+    downloadFn() {
+      alert("CSV Download")
+    },
     autoAssignFn() {
       let date = this.upcommingDatesForPending;
       console.log(date);
